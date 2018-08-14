@@ -4,11 +4,11 @@ Get Involved
 Where to Start?
 ---------------
 
-Use grep or download a tool like `grin <https://pypi.python.org/pypi/grin>`__ to search the code for TODO notes::
+Search the code for TODO notes::
 
-    grin -i -I "*.py*" todo
+    grep -Fri 'todo' --include=*.py . | less
 
-This shows almost 700 TODOs in the code base right now. Feel free to inquire on the mailing list about any of these.
+This shows about 1000 TODOs in the code base right now. Feel free to inquire on the mailing list about any of these.
 
 Sandbox
 -------
