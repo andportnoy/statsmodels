@@ -17,7 +17,6 @@ class TestDecompose:
                                                  periods=len(data),
                                                  freq='Q'))
 
-
     def test_ndarray(self):
         res_add = seasonal_decompose(self.data.values, freq=4)
         seasonal = [62.46, 86.17, -88.38, -60.25, 62.46, 86.17, -88.38,
@@ -290,5 +289,3 @@ class TestDecompose:
         x = self.data.astype(float).copy()
         x.iloc[2] = np.nan
         assert_raises(ValueError, seasonal_decompose, x)
-
-

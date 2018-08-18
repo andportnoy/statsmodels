@@ -1,5 +1,4 @@
 from statsmodels.compat.python import lrange, BytesIO, cPickle
-from statsmodels.compat.testing import skip, skipif
 
 import os
 import warnings
@@ -23,12 +22,11 @@ from statsmodels.tsa.tests.results import results_arma, results_arima
 from statsmodels.tsa.arima_process import arma_generate_sample
 
 import scipy  # only needed for version check
-scipy_old = LooseVersion(scipy.__version__) < '0.16'
 
 try:
     import matplotlib.pyplot as plt
     have_matplotlib = True
-except:
+except ImportError:
     have_matplotlib = False
 
 DECIMAL_4 = 4
@@ -90,66 +88,80 @@ class CheckArmaResultsMixin(object):
     res1 are from statsmodels
     """
     decimal_params = DECIMAL_4
+
     def test_params(self):
         assert_almost_equal(self.res1.params, self.res2.params,
                 self.decimal_params)
 
     decimal_aic = DECIMAL_4
+
     def test_aic(self):
         assert_almost_equal(self.res1.aic, self.res2.aic, self.decimal_aic)
 
     decimal_bic = DECIMAL_4
+
     def test_bic(self):
         assert_almost_equal(self.res1.bic, self.res2.bic, self.decimal_bic)
 
     decimal_arroots = DECIMAL_4
+
     def test_arroots(self):
         assert_almost_equal(self.res1.arroots, self.res2.arroots,
                     self.decimal_arroots)
 
     decimal_maroots = DECIMAL_4
+
     def test_maroots(self):
         assert_almost_equal(self.res1.maroots, self.res2.maroots,
                     self.decimal_maroots)
 
     decimal_bse = DECIMAL_2
+
     def test_bse(self):
         assert_almost_equal(self.res1.bse, self.res2.bse, self.decimal_bse)
 
     decimal_cov_params = DECIMAL_4
+
     def test_covparams(self):
         assert_almost_equal(self.res1.cov_params(), self.res2.cov_params,
                 self.decimal_cov_params)
 
     decimal_hqic = DECIMAL_4
+
     def test_hqic(self):
         assert_almost_equal(self.res1.hqic, self.res2.hqic, self.decimal_hqic)
 
     decimal_llf = DECIMAL_4
+
     def test_llf(self):
         assert_almost_equal(self.res1.llf, self.res2.llf, self.decimal_llf)
 
     decimal_resid = DECIMAL_4
+
     def test_resid(self):
         assert_almost_equal(self.res1.resid, self.res2.resid,
                 self.decimal_resid)
 
     decimal_fittedvalues = DECIMAL_4
+
     def test_fittedvalues(self):
         assert_almost_equal(self.res1.fittedvalues, self.res2.fittedvalues,
                 self.decimal_fittedvalues)
 
     decimal_pvalues = DECIMAL_2
+
     def test_pvalues(self):
         assert_almost_equal(self.res1.pvalues, self.res2.pvalues,
                     self.decimal_pvalues)
 
     decimal_t = DECIMAL_2 # only 2 decimal places in gretl output
+
     def test_tvalues(self):
         assert_almost_equal(self.res1.tvalues, self.res2.tvalues,
                             self.decimal_t)
 
     decimal_sigma2 = DECIMAL_4
+
     def test_sigma2(self):
         assert_almost_equal(self.res1.sigma2, self.res2.sigma2,
                 self.decimal_sigma2)
@@ -159,14 +171,15 @@ class CheckArmaResultsMixin(object):
         table = self.res1.summary()
 
 
-
 class CheckForecastMixin(object):
     decimal_forecast = DECIMAL_4
+
     def test_forecast(self):
         assert_almost_equal(self.res1.forecast_res, self.res2.forecast,
                 self.decimal_forecast)
 
     decimal_forecasterr = DECIMAL_4
+
     def test_forecasterr(self):
         assert_almost_equal(self.res1.forecast_err, self.res2.forecasterr,
                 self.decimal_forecasterr)
@@ -174,6 +187,7 @@ class CheckForecastMixin(object):
 
 class CheckDynamicForecastMixin(object):
     decimal_forecast_dyn = 4
+
     def test_dynamic_forecast(self):
         assert_almost_equal(self.res1.forecast_res_dyn, self.res2.forecast_dyn,
                             self.decimal_forecast_dyn)
@@ -191,6 +205,7 @@ class CheckArimaResultsMixin(CheckArmaResultsMixin):
         assert self.res1.k_ma == self.res2.k_ma
 
     decimal_predict_levels = DECIMAL_4
+
     def test_predict_levels(self):
         assert_almost_equal(self.res1.predict(typ='levels'), self.res2.linear,
                 self.decimal_predict_levels)
@@ -1077,7 +1092,6 @@ def test_arima_predict_indices():
     #TODO: make sure dates are passing through unmolested
     #assert_raises(ValueError, model._get_predict_end, ("2001-1-1",))
 
-
     # the length of diff(cpi) is 202, so last index is 201
     end_test_cases = [(None, 201, 0),
                       (201, 200, 0),
@@ -1743,7 +1757,6 @@ def test_arima_predict_exog():
     ## in-sample
     #assert_almost_equal(predict, predict_expected.values[:98], 6)
 
-
     #predict = arma_res.model.predict(params, end=124, exog=X[100:])
     ## exog for out-of-sample and in-sample dynamic
     #assert_almost_equal(predict, predict_expected.values, 3)
@@ -1787,7 +1800,6 @@ def test_arimax():
     #params = [23.902305009084373, 0.024650911502790, -0.162140641341602,
     #          0.165262136028113, -0.066667022903974]
     #assert_almost_equal(res.params.values, params, 6)
-
 
     # 2 exog
     X = dta
@@ -1877,7 +1889,18 @@ def test_arima_exog_predict_1d():
     x = np.random.random(100)
     mod = ARMA(y, (2, 1), x).fit(disp=-1)
     newx = np.random.random(10)
-    results = mod.forecast(steps=10, alpha=0.05, exog=newx)
+    mod.forecast(steps=10, alpha=0.05, exog=newx)
+
+    with pytest.raises(ValueError):
+        mod.forecast(steps=10, alpha=0.05, exog=newx[:5])
+
+    with pytest.raises(ValueError):
+        mod.forecast(steps=10, alpha=0.05)
+
+    too_many = pd.DataFrame(np.zeros((10, 2)),
+                            columns=['x1', 'x2'])
+    with pytest.raises(ValueError):
+        mod.forecast(steps=10, alpha=0.05, exog=too_many)
 
 
 def test_arima_1123():
@@ -1964,7 +1987,7 @@ class TestARMA00(object):
         predictions = self.arma_00_res.predict()
         assert_almost_equal(self.y.mean() * np.ones_like(predictions), predictions)
 
-    @skip
+    @pytest.mark.skip
     def test_information_criteria(self):
         # This test is invalid since the ICs differ due to df_model differences
         # between OLS and ARIMA
@@ -2033,7 +2056,7 @@ def test_arma_missing():
     assert_raises(MissingDataError, ARMA, y, (1, 0), missing='raise')
 
 
-@skipif(not have_matplotlib, reason='matplotlib not available')
+@pytest.mark.skipif(not have_matplotlib, reason='matplotlib not available')
 def test_plot_predict():
     from statsmodels.datasets.sunspots import load_pandas
 
@@ -2046,7 +2069,6 @@ def test_plot_predict():
     res = ARIMA(dta, (3, 1, 0)).fit(disp=-1)
     fig = res.plot_predict('1990', '2012', dynamic=True, plot_insample=False)
     plt.close(fig)
-
 
 
 def test_arima_diff2():
@@ -2067,7 +2089,6 @@ def test_arima_diff2():
                      (220.559,  235.735),
                      (221.206,  237.709)]
 
-
     fc_res = [217.685, 218.996, 220.356, 221.656, 222.945, 224.243, 225.541,
           226.841, 228.147, 229.457]
     fcerr_res = [0.7888, 1.2878, 1.6798, 2.0768,  2.4620, 2.8269, 3.1816,
@@ -2085,7 +2106,7 @@ def test_arima_diff2():
                      229.457]
     assert_almost_equal(predicted, predicted_res, 3)
 
-@skipif(scipy_old, reason='scipy is old, test might fail')
+
 def test_arima111_predict_exog_2127():
     # regression test for issue #2127
     ef =  [ 0.03005,  0.03917,  0.02828,  0.03644,  0.03379,  0.02744,
@@ -2142,6 +2163,16 @@ def test_arima111_predict_exog_2127():
 
     assert_allclose(predicts, predicts_res, atol=5e-6)
 
+    # Smoke check of forecast with exog in ARIMA
+    res.forecast(steps=10, exog=np.empty(10))
+
+    with pytest.raises(ValueError):
+        res.forecast(steps=10)
+    with pytest.raises(ValueError):
+        res.forecast(steps=10, exog=np.empty((10, 2)))
+    with pytest.raises(ValueError):
+        res.forecast(steps=10, exog=np.empty(100))
+
 
 def test_ARIMA_exog_predict():
     # test forecasting and dynamic prediction with exog against Stata
@@ -2171,7 +2202,6 @@ def test_ARIMA_exog_predict():
 
     predicted_arma_fp = res.predict(start=197, end=202, exog=exog_full.values[197:]).values
     predicted_arma_dp = res.predict(start=193, end=202, exog=exog_full[197:], dynamic=True)
-
 
     # numpy
     mod2 = ARIMA(np.asarray(data_sample['loginv']), (1,0,1),
@@ -2222,7 +2252,6 @@ def test_ARIMA_exog_predict():
     assert_allclose(predicted_arima_d, res_d111[-len(predicted_arima_d):], rtol=1e-4, atol=1e-4)
     assert_allclose(predicted_arima_f, res_f111[-len(predicted_arima_f):], rtol=1e-4, atol=1e-4)
 
-
     # test for forecast with 0 ar fix in #2457 numbers again from Stata
 
     res_f002 = np.array([ 7.70178181209,  7.67445481224,  7.6715373765 ,  7.6772915319 ,
@@ -2233,7 +2262,6 @@ def test_ARIMA_exog_predict():
          7.61173201163,  7.67913499878,  7.67306697759,  7.65287924998,
          7.64904451605,  7.66580449603,  7.66252081172,  7.62213286298,
          7.53795983357,  7.53626130154,  7.54539963934])
-
 
     mod_002 = ARIMA(np.asarray(data_sample['loginv']), (0,0,2),
                    exog=np.asarray(data_sample[['loggdp', 'logcons']]))
@@ -2260,6 +2288,14 @@ def test_ARIMA_exog_predict():
     predict_3b = res_002.predict(start=100, end=120,
                                  exog=exog_full.values[100:120], dynamic=True)
     assert_allclose(predict_3a, predict_3b, rtol=1e-10)
+
+    h = len(exog_full.values[197:])
+    with pytest.raises(ValueError):
+        res_002.forecast(steps=h)
+    with pytest.raises(ValueError):
+        res_002.forecast(steps=h, exog=np.empty((h, 20)))
+    with pytest.raises(ValueError):
+        res_002.forecast(steps=h, exog=np.empty(20))
 
 
 def test_arima_fit_mutliple_calls():
@@ -2288,6 +2324,7 @@ def test_arima_fit_mutliple_calls():
 
     # ensure summary() works
     res.summary()
+
 
 def test_long_ar_start_params():
     np.random.seed(12345)

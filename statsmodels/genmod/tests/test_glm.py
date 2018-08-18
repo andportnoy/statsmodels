@@ -3,12 +3,12 @@ Test functions for models.GLM
 """
 from __future__ import division
 from statsmodels.compat import range
-from statsmodels.compat.testing import skipif
 
 import os
 import numpy as np
 from numpy.testing import (assert_almost_equal, assert_equal, assert_raises,
                            assert_allclose, assert_, assert_array_less, dec)
+import pytest
 from scipy import stats
 import statsmodels.api as sm
 from statsmodels.genmod.generalized_linear_model import GLM
@@ -111,7 +111,8 @@ class CheckModelResultsMixin(object):
     def test_aic_Stata(self):
         # Stata uses the below llf for aic definition for these families
         if isinstance(self.res1.model.family, (sm.families.Gamma,
-            sm.families.InverseGaussian, sm.families.NegativeBinomial)):
+                                               sm.families.InverseGaussian,
+                                               sm.families.NegativeBinomial)):
             llf = self.res1.model.family.loglike(self.res1.model.endog,
                                                  self.res1.mu,
                                                  self.res1.model.var_weights,
@@ -137,7 +138,8 @@ class CheckModelResultsMixin(object):
         # Stata uses the below llf for these families
         # We differ with R for them
         if isinstance(self.res1.model.family, (sm.families.Gamma,
-            sm.families.InverseGaussian, sm.families.NegativeBinomial)):
+                                               sm.families.InverseGaussian,
+                                               sm.families.NegativeBinomial)):
             llf = self.res1.model.family.loglike(self.res1.model.endog,
                                                  self.res1.mu,
                                                  self.res1.model.var_weights,
@@ -900,7 +902,7 @@ def test_formula_missing_exposure():
                   exposure=exposure, family=family)
 
 
-@skipif(not have_matplotlib, reason='matplotlib not available')
+@pytest.mark.skipif(not have_matplotlib, reason='matplotlib not available')
 def test_plots():
 
     np.random.seed(378)
@@ -1964,7 +1966,6 @@ class TestRegularized(object):
                     return llf
 
                 # Confirm that we are doing better than glmnet.
-                from numpy.testing import assert_equal
                 llf_r = plf(params)
                 llf_sm = plf(sm_result.params)
                 assert_equal(np.sign(llf_sm - llf_r), 1)

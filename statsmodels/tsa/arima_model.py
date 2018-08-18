@@ -393,7 +393,7 @@ def _make_arma_names(data, k_trend, order, exog_names):
     if k_ma ==0 and k_ar ==0:
         if len(exog_names) != 0:
             return exog_names
-    elif  (exog_names[-k_ma:] == ma_lag_names ) and \
+    elif (exog_names[-k_ma:] == ma_lag_names ) and \
            exog_names[-(k_ar+k_ma):-k_ma] == ar_lag_names and \
            (not exog_names or not trend_name or trend_name[0] == exog_names[0]):
             return exog_names
@@ -1558,10 +1558,19 @@ class ARMAResults(tsbase.TimeSeriesModelResults):
                 exog = exog[None, :]
             if exog.shape[0] != steps:
                 raise ValueError("new exog needed for each step")
+            if self.k_exog != exog.shape[1]:
+                raise ValueError('exog must contain the same number of '
+                                 'variables as in the estimated model.')
             # prepend in-sample exog observations
             if self.k_ar > 0:
                 exog = np.vstack((self.model.exog[-self.k_ar:, self.k_trend:],
                                   exog))
+        else:
+            if self.k_exog:
+                raise ValueError('Forecast values for exog are required when '
+                                 'the model contains exogenous regressors.')
+
+
 
         forecast = _arma_predict_out_of_sample(self.params,
                                                steps, self.resid, self.k_ar,
@@ -1772,7 +1781,6 @@ class ARMAResults(tsbase.TimeSeriesModelResults):
         _ = _import_mpl()
         fig, ax = create_mpl_ax(ax)
 
-
         # use predict so you set dates
         forecast = self.predict(start, end, exog, dynamic)
         # doing this twice. just add a plot keyword to predict?
@@ -1784,7 +1792,6 @@ class ARMAResults(tsbase.TimeSeriesModelResults):
             fc_error = self._forecast_error(steps)
             conf_int = self._forecast_conf_int(forecast[-steps:], fc_error,
                                                alpha)
-
 
         if hasattr(self.data, "predict_dates"):
             from pandas import Series
@@ -1816,7 +1823,7 @@ class ARMAResultsWrapper(wrap.ResultsWrapper):
     _methods = {}
     _wrap_methods = wrap.union_dicts(tsbase.TimeSeriesResultsWrapper._wrap_methods,
                                      _methods)
-wrap.populate_wrapper(ARMAResultsWrapper, ARMAResults)
+wrap.populate_wrapper(ARMAResultsWrapper, ARMAResults)  # noqa:E305
 
 
 class ARIMAResults(ARMAResults):
@@ -1873,10 +1880,18 @@ class ARIMAResults(ARMAResults):
                 exog = exog[:, None]
             if exog.shape[0] != steps:
                 raise ValueError("new exog needed for each step")
+            if self.k_exog != exog.shape[1]:
+                raise ValueError('exog must contain the same number of '
+                                 'variables as in the estimated model.')
             # prepend in-sample exog observations
             if self.k_ar > 0:
                 exog = np.vstack((self.model.exog[-self.k_ar:, self.k_trend:],
                                   exog))
+        else:
+            if self.k_exog:
+                raise ValueError('Forecast values for exog are required when '
+                                 'the model contains exogenous regressors.')
+
         forecast = _arma_predict_out_of_sample(self.params, steps, self.resid,
                                                self.k_ar, self.k_ma,
                                                self.k_trend, self.k_exog,
@@ -1941,7 +1956,7 @@ class ARIMAResults(ARMAResults):
 
 class ARIMAResultsWrapper(ARMAResultsWrapper):
     pass
-wrap.populate_wrapper(ARIMAResultsWrapper, ARIMAResults)
+wrap.populate_wrapper(ARIMAResultsWrapper, ARIMAResults)  # noqa:E305
 
 
 if __name__ == "__main__":

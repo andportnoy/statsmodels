@@ -13,12 +13,8 @@ import statsmodels.tools.numdiff as nd
 import os
 import csv
 import scipy
-import nose.tools
 
 # TODO: add tests with unequal group sizes
-
-v = scipy.__version__.split(".")[1]
-old_scipy = int(v) < 16
 
 
 class R_Results(object):
@@ -223,8 +219,6 @@ class TestMixedLM(object):
             dist_high=0.5,
             num_high=3)
 
-    # Fails on old versions of scipy/numpy
-    @pytest.mark.skipif(old_scipy, reason='SciPy too old')
     def test_vcomp_1(self):
         # Fit the same model using constrained random effects and
         # variance components.
@@ -325,7 +319,6 @@ class TestMixedLM(object):
         assert_allclose(
             result1.bse.iloc[0:3], [0.12610, 0.03938, 0.03848], rtol=1e-3)
 
-    @pytest.mark.skipif(old_scipy, reason='SciPy too old')
     def test_vcomp_3(self):
         # Test a model with vcomp but no other random effects, using formulas.
 
@@ -352,7 +345,6 @@ class TestMixedLM(object):
             np.r_[-0.101549, 0.028613, -0.224621, -0.126295],
             rtol=1e-3)
 
-    @pytest.mark.skipif(old_scipy, reason='SciPy too old')
     def test_sparse(self):
 
         cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -707,7 +699,6 @@ class TestMixedLM(object):
             rslt5 = mod5.fit()
         assert_almost_equal(rslt4.params, rslt5.params)
 
-    @pytest.mark.skipif(old_scipy, reason='SciPy too old')
     def test_regularized(self):
 
         np.random.seed(3453)
@@ -857,23 +848,13 @@ fnames = os.listdir(rdir)
 fnames = [x for x in fnames if x.startswith("lme") and x.endswith(".csv")]
 
 
-# Copied from bashtage's #3847
-@nose.tools.nottest
+# Copied from #3847
 @pytest.mark.parametrize('fname', fnames)
 @pytest.mark.parametrize('reml', [False, True])
 @pytest.mark.parametrize('irf', [False, True])
 def test_r(fname, reml, irf):
     ds_ix = int(fname[3:5])
     do1(reml, irf, ds_ix)
-
-
-# TODO: Remove after nose is permanently dropped
-def test_r_all():
-    for fname in fnames:
-        for reml in [False, True]:
-            for irf in [False, True]:
-                ds_ix = int(fname[3:5])
-                do1(reml, irf, ds_ix)
 
 
 # ------------------------------------------------------------------

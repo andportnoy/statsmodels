@@ -4,10 +4,10 @@ Tests of save / load / remove_data state space functionality.
 
 from __future__ import division, absolute_import, print_function
 from statsmodels.compat import cPickle
-from statsmodels.compat.testing import SkipTest
 
 import numpy as np
 from distutils.version import LooseVersion
+import pytest
 import os
 
 from statsmodels import datasets
@@ -16,11 +16,6 @@ from statsmodels.tsa.statespace import (sarimax, structural, varmax,
 from numpy.testing import assert_allclose
 macrodata = datasets.macrodata.load_pandas().data
 
-# Skip copy test on older NumPy since copy does not preserve order
-NP_LT_18 = LooseVersion(np.__version__).version[:2] < [1, 8]
-
-if NP_LT_18:
-    raise SkipTest("NumPy <= 1.8 doesn't preserve matrix order when copying")
 
 def test_sarimax():
     mod = sarimax.SARIMAX(macrodata['realgdp'].values, order=(4, 1, 0))

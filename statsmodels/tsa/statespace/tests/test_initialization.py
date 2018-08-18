@@ -19,7 +19,6 @@ from statsmodels.tsa.statespace import (sarimax, structural, varmax,
 from statsmodels.tsa.statespace.initialization import Initialization
 from numpy.testing import (assert_allclose, assert_almost_equal, assert_equal,
                            assert_raises)
-from nose.exc import SkipTest
 
 
 def check_initialization(mod, init, a_true, Pinf_true, Pstar_true):
@@ -284,7 +283,7 @@ def test_mixed_stationary():
     init.set(2, 'approximate_diffuse')
     T = np.array([[0.5]])
     Q = np.diag([sigma2])
-    desired_cov = np.diag([0, solve_discrete_lyapunov(T, Q), 1e6])
+    desired_cov = np.diag([0, np.squeeze(solve_discrete_lyapunov(T, Q)), 1e6])
     check_initialization(mod, init, [0, 0, 0], np.diag([1, 0, 0]), desired_cov)
 
     init.clear()

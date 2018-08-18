@@ -11,10 +11,10 @@ Author: Chad Fulton
 License: Simplified-BSD
 """
 from __future__ import division, absolute_import, print_function
-from statsmodels.compat.testing import skip
 
 import numpy as np
 import pandas as pd
+import pytest
 import os
 import re
 
@@ -82,6 +82,7 @@ def check_irf(test, mod, results, params=None):
                    for name in endog.columns]
         assert_allclose(res.impulse_responses(10, i, orthogonalized=True, cumulative=True),
                         results_var_R_output[columns])
+
 
 def test_var_basic():
     test = 'basic'
@@ -265,4 +266,3 @@ def test_var_c_2exog():
     check_irf(test, mod, results)
 
     # FEVD: TODO
-
